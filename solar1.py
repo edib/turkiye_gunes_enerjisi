@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from pysolar.solar import *
 from datetime import datetime, timedelta
 from tqdm import tqdm
@@ -24,21 +25,15 @@ whole_year = 24*365
 my_time = datetime(2018,1,1,0,0)
 print("City", "Sun Altitude","Hour,Watt/m2")
 output = []
-with open("solartimes.txt",mode='w',encoding='utf-8') as f:
+selectedTimeResolution = timeResolution.MINUTES
+with open("/dev/null",mode='w',encoding='utf-8') as f:
         for city in tqdm(cityList['city'].values,desc="Şehirler",unit="Şehir"): #:
-                i = 0
                 location = geolocator.geocode(city)
                 # calculate for every hour for 2018
-                t = timeGenerator(my_time,timeResolution.MINUTES)
-                for my_time in tqdm(iterable=t,desc=city,total=525600,ncols=100,unit="#"):
-                        i += 1
+                t = timeGenerator(my_time,selectedTimeResolution)
+                for my_time in tqdm(iterable=t,desc=city,total=31536000/selectedTimeResolution,unit="#"):
                         sun_alt = get_altitude(location.latitude, location.longitude, my_time)
                         if sun_alt > 0 :
-                                print(("City: {}\tSun Altitude {}\tTime: {}\tWatt/m2: {}".format(city, sun_alt, my_time, radiation.get_radiation_direct(my_time, sun_alt))),file=f)
-                        else:
-                                print(("City: {}\tSun Altitude {}\tTime: {}\tWatt/m2: {}".format(city, sun_alt, my_time, 0)),file=f)
-                        if i % 5250 == 0:
-                                print(".",end="")
-                        
-
-        
+                                print(("Time: {}\tCity: {}\tWatt/m2: {}".format(my_time, city, radiation.get_radiation_direct(my_time, sun_alt))),file=f)
+                        #else:
+                        #        print(("City: {}\tTime: {}\tWatt/m2: {}".format(city, sun_alt, my_time, 0)),file=f)
