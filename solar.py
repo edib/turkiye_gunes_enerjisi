@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from pysolar.solar import *
 from datetime import datetime,timedelta
 from geopy.geocoders import Nominatim
@@ -40,7 +41,8 @@ my_time = datetime(2018,1,1,0,0)
 print("City", "Sun Altitude","Hour,Watt/m2")
 output = []
 CALCULATIONRESOLUTION   = TimeResolution.MINUTES
-TARGETRESOLUTION        = TimeResolution.HOURS
+TARGETRESOLUTION        = TimeResolution.MINUTES
+TARGETPRECISION 	= 6
 with open("solartimes.txt",mode='w',encoding='utf-8') as f:
     for city in tqdm(cityList['city'].values,desc="Şehirler",unit="Şehir"): #:
         location = geolocator.geocode(city)
@@ -51,8 +53,9 @@ with open("solartimes.txt",mode='w',encoding='utf-8') as f:
         prev_time = 0
         for my_time in tqdm(iterable=stepsGenerator,desc=city,total=31536000/CALCULATIONRESOLUTION,ncols=100,unit="#"):
             if timeMod(my_time,targetTimeDelta).seconds == 0:
-                if totalWattage != 0:
-                    print(("City: {}\tSun Altitude {}\tTime: {}\tWatt/m2: {}".format(city, sun_alt, prev_time, totalWattage)),file=f)
+                if totalWattage >= (10 ** -TARGETPRECISION):
+                    totalWattage /= (TARGETRESOLUTION / CALCULATIONRESOLUTION)
+                    print((("City: {}\tSun Altitude {}\tTime: {}\tWatt/m2: {:."+str(TARGETPRECISION)+"f}").format(city, sun_alt, prev_time, totalWattage)),file=f)
                 prev_time = my_time
                 totalWattage = 0
             sun_alt = get_altitude(location.latitude, location.longitude, my_time)
